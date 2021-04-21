@@ -27,6 +27,7 @@ import { timer } from 'rxjs';
 import { AmountPreview, RatesFetcher } from '../../constants/rates';
 import useExampleHook from '../../constants/ratesExampleHook';
 import BigNumber from 'bignumber.js';
+import useComitFetcher from '../ComitSwapFlow/useComitFetcher';
 
 const useStyles = makeStyles(() =>
   createStyles({
@@ -93,14 +94,17 @@ const ChooseTradingPair = (_props: ChooseTradingPairProps) => {
     !swapProvider;
 
   const tdexFetcher = useExampleHook();
+  const comitFetcher = useComitFetcher();
 
   let ratesFetcher: RatesFetcher | null;
   switch (swapProvider) {
     case SwapProvider.TDEX:
       ratesFetcher = tdexFetcher;
       break;
-    case SwapProvider.BOLTZ:
     case SwapProvider.COMIT:
+      ratesFetcher = comitFetcher;
+      break;
+    case SwapProvider.BOLTZ:
     default:
       break;
   }

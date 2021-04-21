@@ -1,71 +1,47 @@
-import { useState } from 'react';
 import Libp2p from 'libp2p';
-import WebSockets from 'libp2p-websockets';
-import filters from 'libp2p-websockets/src/filters';
-import MPLEX from 'libp2p-mplex';
 import { NOISE } from 'libp2p-noise';
-import Multiaddr from 'multiaddr';
+import filters from 'libp2p-websockets/src/filters';
+import { Multiaddr }  from 'multiaddr';
 import PeerId from 'peer-id';
+import WebSockets from 'libp2p-websockets';
+import MPLEX from 'libp2p-mplex';
+import { BitcoinAmount } from './BitcoinAmount';
 import wrap from 'it-pb-rpc';
-import Decimal from 'decimal.js';
-import useAsyncEffect from 'use-async-effect';
-
-export default function useAsb() {
-  let [asb, setAsb] = useState<Asb | null>(null);
-
-  useAsyncEffect(async () => {
-    if (!asb) {
-      try {
-        const asb = await Asb.newInstance();
-        setAsb(asb);
-      } catch (e) {
-        console.error(e);
-      }
-    }
-  });
-
-  return asb;
-}
-
-export const ASB_MULTI_ADR = Multiaddr('/dnsaddr/xmr-btc-asb.coblox.tech');
-export const ASB_PEER_ID = PeerId.createFromB58String(
-  '12D3KooWCdMKjesXMJz1SiZ7HgotrxuqhQJbP5sgBm2BwP1cqThi'
-);
+import { Network } from '../../context/NetworkContext';
 
 const QUOTE_PROTOCOL = '/comit/xmr/btc/bid-quote/1.0.0';
 
-const transportKey = WebSockets.prototype[Symbol.toStringTag];
+// TODO: Mainnet address
+const ASB_MULTI_ADR = '/dnsaddr/xmr-btc-asb.coblox.tech';
+const ASB_PEER_ID = '12D3KooWCdMKjesXMJz1SiZ7HgotrxuqhQJbP5sgBm2BwP1cqThi';
 
-export class BitcoinAmount {
-  decimals: number = 8;
-  adjust: Decimal;
-  satoshis: Decimal;
+const ASB_MULTI_ADR_TESTNET = '/dnsaddr/xmr-btc-asb.coblox.tech';
+const ASB_PEER_ID_TESTNET =
+  '12D3KooWCdMKjesXMJz1SiZ7HgotrxuqhQJbP5sgBm2BwP1cqThi';
 
-  constructor(satoshis: number | string) {
-    this.satoshis = new Decimal(satoshis);
-    this.adjust = new Decimal(10).pow(new Decimal(this.decimals));
-  }
-
-  public asSat(): Decimal {
-    return this.satoshis;
-  }
-
-  public asBtc(): Decimal {
-    return this.satoshis.div(this.adjust);
-  }
-
-  public toString(): string {
-    return this.asBtc().toString() + ' BTC';
-  }
+export function getPeerIdForNetwork(network: Network): PeerId {
+  return network === Network.Mainnet
+    ? PeerId.createFromB58String(ASB_PEER_ID)
+    : PeerId.createFromB58String(ASB_PEER_ID_TESTNET);
 }
+
+export function getMultiaddrForNetwork(network: Network): Multiaddr {
+  return network === Network.Mainnet
+    ? new Multiaddr(ASB_MULTI_ADR)
+    : new Multiaddr(ASB_MULTI_ADR_TESTNET);
+}
+
+const transportKey = WebSockets.prototype[Symbol.toStringTag];
 
 export class Quote {
   price: BitcoinAmount;
   max_quantity: BitcoinAmount;
+  timestamp: Date;
 
   constructor(price: number, max_quantity: number) {
-    this.price = new BitcoinAmount(price);
-    this.max_quantity = new BitcoinAmount(max_quantity);
+    this.price = BitcoinAmount.fromSat(price);
+    this.max_quantity = BitcoinAmount.fromSat(max_quantity);
+    this.timestamp = new Date();
   }
 }
 
@@ -85,9 +61,12 @@ const jsonCodec = {
 };
 
 export class Asb {
-  private constructor(private libp2p: Libp2p) {}
+  private constructor(private libp2p: Libp2p, private peerId: PeerId) {}
 
-  public static async newInstance(): Promise<Asb> {
+  public static async newInstance(network: Network): Promise<Asb> {
+    let multiaddr = getMultiaddrForNetwork(network);
+    let peerId = getPeerIdForNetwork(network);
+
     const node = await Libp2p.create({
       modules: {
         transport: [WebSockets],
@@ -103,15 +82,17 @@ export class Asb {
         },
       },
     });
+
     await node.start();
-    node.peerStore.addressBook.add(ASB_PEER_ID, [ASB_MULTI_ADR]);
-    return new Asb(node);
+    node.peerStore.addressBook.add(peerId, [multiaddr]);
+
+    return new Asb(node, peerId);
   }
 
   public async quote(): Promise<Quote> {
     try {
       const { stream } = await this.libp2p.dialProtocol(
-        ASB_PEER_ID,
+        this.peerId,
         QUOTE_PROTOCOL
       );
       let quote: QuoteResponse = await wrap(stream).pb(jsonCodec).read();

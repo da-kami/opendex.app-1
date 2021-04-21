@@ -14,8 +14,6 @@ export default function useDownloadUrl() {
 
   useEffect(() => {
     axios.get(GITHUB_RELEASE_URL).then(res => {
-      console.log(res);
-
       let gh = res.data;
       const os = getOs();
       for (let asset of gh.assets) {
@@ -24,7 +22,7 @@ export default function useDownloadUrl() {
         }
       }
     });
-  }, []);
+  }, [setDownloadUrl]);
 
   return downloadUrl;
 }
