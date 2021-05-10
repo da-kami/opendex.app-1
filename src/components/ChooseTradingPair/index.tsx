@@ -26,6 +26,7 @@ import {
 import { timer } from 'rxjs';
 import { AmountPreview, RatesFetcher } from '../../constants/rates';
 import useExampleHook from '../../constants/ratesExampleHook';
+import useBoltzFetcher from '../../constants/boltzFetcherHook';
 import BigNumber from 'bignumber.js';
 
 const useStyles = makeStyles(() =>
@@ -93,6 +94,7 @@ const ChooseTradingPair = (_props: ChooseTradingPairProps) => {
     !swapProvider;
 
   const tdexFetcher = useExampleHook();
+  const boltzFetcher = useBoltzFetcher();
 
   let ratesFetcher: RatesFetcher | null;
   switch (swapProvider) {
@@ -100,6 +102,8 @@ const ChooseTradingPair = (_props: ChooseTradingPairProps) => {
       ratesFetcher = tdexFetcher;
       break;
     case SwapProvider.BOLTZ:
+      ratesFetcher = boltzFetcher;
+      break;
     case SwapProvider.COMIT:
     default:
       break;
