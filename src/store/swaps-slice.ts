@@ -17,8 +17,8 @@ interface SwapsState {
 // Define the initial state using that type
 export const initialState: SwapsState = {
   swapStep: SwapStep.CHOOSE_PAIR,
-  sendAsset: Currency.LIGHTNING_BTC,
-  receiveAsset: Currency.ETH,
+  sendAsset: Currency.BTC,
+  receiveAsset: Currency.LIGHTNING_BTC,
   sendAmount: '',
   receiveAmount: '',
 };

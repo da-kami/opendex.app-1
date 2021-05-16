@@ -27,12 +27,14 @@ type NetworkContextData = {
   setNetwork: (network: Network) => void;
 };
 
-const defaultNetwork =
+const defaultNetwork = Network.Testnet;
+/*
   window.location.hostname === 'opendex.app'
     ? Network.Mainnet
     : window.location.hostname === 'staging.opendex.app'
     ? Network.Testnet
     : Network.Regtest;
+*/
 
 const NetworkContext = React.createContext<NetworkContextData>({
   network: defaultNetwork,
