@@ -25,7 +25,7 @@ interface BoltzRatesFetcherOptions extends RatesFetcherOpts {
 }
 
 // Map CurrencyID to the corresponding key from Boltz's API
-const boltzPairsMap = (currency: CurrencyID) => {
+export const boltzPairsMap = (currency: CurrencyID) => {
   switch (currency) {
     case CurrencyID.BTC:
       return 'BTC';

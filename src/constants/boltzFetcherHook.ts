@@ -1,13 +1,13 @@
-import { useState, useEffect } from 'react';
-import { RatesFetcher } from './rates';
-import BoltzFetcher from './boltzRates';
-import { useNetwork } from '../context/NetworkContext';
+import { useEffect, useState } from 'react';
 import { BOLTZ_GET_PAIRS_API_URL } from '../api/boltzApiUrls';
+import { useBoltzConfiguration } from '../context/NetworkContext';
+import BoltzFetcher from './boltzRates';
+import { RatesFetcher } from './rates';
 
 export default function useBoltzFetcher(): RatesFetcher | null {
   const [fetcher, setFetcher] = useState<RatesFetcher | null>(null);
-  const { network } = useNetwork();
-  const url = BOLTZ_GET_PAIRS_API_URL(network);
+  const { apiEndpoint } = useBoltzConfiguration();
+  const url = BOLTZ_GET_PAIRS_API_URL(apiEndpoint);
 
   useEffect(() => {
     const boltzFetcher = new BoltzFetcher({

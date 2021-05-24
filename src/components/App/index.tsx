@@ -4,11 +4,12 @@ import { ThemeProvider } from '@material-ui/styles';
 import { createBrowserHistory } from 'history';
 import { Provider } from 'react-redux';
 import { Redirect, Route, Router, Switch } from 'react-router-dom';
-import { store } from '../../store';
+import { NetworkProvider } from '../../context/NetworkContext';
+import BoltzRefund from '../../pages/BoltzRefund';
 import HomePage from '../../pages/home';
+import { store } from '../../store';
 import { Path } from './path';
 import { theme } from './theme';
-import { NetworkProvider } from '../../context/NetworkContext';
 
 const history = createBrowserHistory();
 
@@ -22,6 +23,9 @@ function App() {
             <Switch>
               <Route exact path={Path.HOME}>
                 <HomePage />
+              </Route>
+              <Route exact path={Path.BOLTZ_REFUND}>
+                <BoltzRefund />
               </Route>
               <Route path="*">
                 <Redirect to={Path.HOME} />
