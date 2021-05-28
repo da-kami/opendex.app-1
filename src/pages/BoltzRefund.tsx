@@ -13,6 +13,7 @@ import {
   RefundDetails,
   StatusResponse,
   SwapTransaction,
+  SwapUpdateEvent,
 } from '../constants/boltzSwap';
 import { useBoltzConfiguration } from '../context/NetworkContext';
 import Layout from '../layout/main';
@@ -75,9 +76,15 @@ const BoltzRefund = (): ReactElement => {
     };
   };
 
+  const swapComplete =
+    swapStatus?.status === SwapUpdateEvent.TransactionClaimed;
+
   const refundButtonText = () => {
     if (swapTransaction?.error) {
       return swapTransaction.error;
+    }
+    if (swapComplete) {
+      return 'Ok';
     }
     if (swapTransaction?.timeoutEta) {
       const { label } = getEta();
@@ -110,11 +117,16 @@ const BoltzRefund = (): ReactElement => {
       ),
       buttonText: refundButtonText(),
       buttonDisabled:
-        !swapTransaction ||
-        !!swapTransaction.error ||
-        !!swapTransaction.timeoutEta ||
-        !address,
+        !swapComplete &&
+        (!swapTransaction ||
+          !!swapTransaction.error ||
+          !!swapTransaction.timeoutEta ||
+          !address),
       onButtonClick: () => {
+        if (swapComplete) {
+          reset();
+          return;
+        }
         startRefund(
           refundDetails!,
           address,

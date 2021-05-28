@@ -21,7 +21,7 @@ const BoltzSwapStatus = (props: BoltzSwapStatusProps): ReactElement => {
 
   return (
     <BoltzSwapStep
-      title={!swapError(swapStatus) ? 'Swap status' : ''}
+      title="Swap status"
       content={
         <BoltzStatus
           swapStatus={swapStatus}

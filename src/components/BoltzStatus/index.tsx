@@ -1,21 +1,20 @@
 import {
   createStyles,
-  Grid,
   LinearProgress,
   makeStyles,
   Step,
   StepContent,
   StepLabel,
   Stepper,
-  Typography,
 } from '@material-ui/core';
 import React, { ReactElement, useEffect, useState } from 'react';
-import { useHistory } from 'react-router';
-import { StatusResponse, swapSteps } from '../../constants/boltzSwap';
+import {
+  StatusResponse,
+  swapSteps,
+  SwapUpdateEvent,
+} from '../../constants/boltzSwap';
 import { swapError } from '../../utils/boltzSwapStatus';
-import svgIcons from '../../utils/svgIcons';
-import { Path } from '../App/path';
-import Button from '../Button';
+import BoltzSwapResult from '../BoltzSwapResult';
 
 type BoltzStatusProps = {
   swapStatus: StatusResponse;
@@ -41,7 +40,6 @@ const BoltzStatus = (props: BoltzStatusProps): ReactElement => {
   const classes = useStyles();
   const { swapStatus, showRefundButton, onActiveStepChange } = props;
   const [activeStep, setActiveStep] = useState(0);
-  const history = useHistory();
 
   useEffect(() => {
     const statuses = swapSteps.map(step => step.status);
@@ -57,30 +55,12 @@ const BoltzStatus = (props: BoltzStatusProps): ReactElement => {
 
   return (
     <>
-      {swapError(swapStatus) ? (
-        <Grid
-          item
-          container
-          justify="center"
-          alignItems="center"
-          direction="column"
-        >
-          <Grid item className={classes.imageContainer}>
-            <img src={svgIcons.snap} alt="aw, snap!" />
-          </Grid>
-          <Typography align="center">{swapError(swapStatus)}</Typography>
-          {showRefundButton && (
-            <Button
-              variant="outlined"
-              size="large"
-              color="primary"
-              onClick={() => history.push(Path.BOLTZ_REFUND)}
-              className={classes.refundButton}
-            >
-              Refund
-            </Button>
-          )}
-        </Grid>
+      {swapError(swapStatus) ||
+      swapStatus.status === SwapUpdateEvent.TransactionClaimed ? (
+        <BoltzSwapResult
+          swapStatus={swapStatus}
+          showRefundButton={showRefundButton}
+        />
       ) : (
         <>
           <Stepper activeStep={activeStep} orientation="vertical">
