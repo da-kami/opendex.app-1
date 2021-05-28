@@ -18,7 +18,10 @@ import {
 import { useBoltzConfiguration } from '../context/NetworkContext';
 import Layout from '../layout/main';
 import { timeDiffCalc } from '../services/refund/timestamp';
-import { startRefund } from '../utils/boltzRefund';
+import {
+  removeRefundDetailsFromLocalStorage,
+  startRefund,
+} from '../utils/boltzRefund';
 import { startListening } from '../utils/boltzSwapStatus';
 import { getErrorMessage } from '../utils/error';
 
@@ -139,7 +142,10 @@ const BoltzRefund = (): ReactElement => {
             console.log('Refund failed:', err);
             setActiveStep(prev => prev + 1);
           },
-          complete: () => setActiveStep(prev => prev + 1),
+          complete: () => {
+            removeRefundDetailsFromLocalStorage(refundDetails!.swapId);
+            setActiveStep(prev => prev + 1);
+          },
         });
       },
     },
