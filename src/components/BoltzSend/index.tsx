@@ -5,6 +5,7 @@ import {
   makeStyles,
   TextField,
 } from '@material-ui/core';
+import BigNumber from 'bignumber.js';
 import React, { ReactElement, useEffect } from 'react';
 import {
   BoltzSwapResponse,
@@ -14,6 +15,7 @@ import {
 import { useAppSelector } from '../../store/hooks';
 import { selectSendAsset } from '../../store/swaps-slice';
 import { swapError } from '../../utils/boltzSwapStatus';
+import BoltzAmount from '../BoltzAmount';
 import BoltzSwapStep from '../BoltzSwapStep';
 import Button from '../Button';
 import DrawQrCode from '../DrawQrCode';
@@ -39,9 +41,6 @@ const BoltzSend = (props: BoltzSendProps): ReactElement => {
   const classes = useStyles();
   const { swapDetails, swapStatus, proceedToNext } = props;
   const sendCurrency = useAppSelector(selectSendAsset);
-  const title = `Send ${
-    swapDetails.expectedAmount! / 10 ** 8
-  } ${sendCurrency} to`;
 
   const isWaitingForTransaction =
     !swapStatus || swapStatus.status === SwapUpdateEvent.InvoiceSet;
@@ -54,7 +53,18 @@ const BoltzSend = (props: BoltzSendProps): ReactElement => {
 
   return (
     <BoltzSwapStep
-      title={title}
+      title={
+        <>
+          Send
+          <br />
+          <BoltzAmount
+            amountInMainUnit={new BigNumber(swapDetails.expectedAmount!)
+              .dividedBy(10 ** 8)
+              .toString()}
+            currency={sendCurrency}
+          />
+        </>
+      }
       content={
         <>
           <TextField

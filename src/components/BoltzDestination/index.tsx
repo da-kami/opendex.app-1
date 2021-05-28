@@ -1,4 +1,11 @@
-import { FormControlLabel, Grid, Switch, TextField } from '@material-ui/core';
+import {
+  createStyles,
+  FormControlLabel,
+  Grid,
+  makeStyles,
+  Switch,
+  TextField,
+} from '@material-ui/core';
 import React, { ReactElement, useEffect, useState } from 'react';
 import { BOLTZ_CREATE_SWAP_API_URL } from '../../api/boltzApiUrls';
 import { boltzPairsMap } from '../../constants/boltzRates';
@@ -6,6 +13,7 @@ import { BoltzSwapResponse, RefundDetails } from '../../constants/boltzSwap';
 import { useBoltzConfiguration } from '../../context/NetworkContext';
 import { isInvoiceValid } from '../../services/submarine/invoiceValidation';
 import { generateKeys } from '../../services/submarine/keys';
+import { selectUnit } from '../../store/boltz-slice';
 import { useAppSelector } from '../../store/hooks';
 import {
   selectReceiveAmount,
@@ -13,6 +21,7 @@ import {
   selectSendAsset,
 } from '../../store/swaps-slice';
 import { addRefundDetailsToLocalStorage } from '../../utils/boltzRefund';
+import BoltzAmount from '../BoltzAmount';
 import BoltzSwapStep from '../BoltzSwapStep';
 import DownloadRefundFile from '../DownloadRefundFile';
 
@@ -20,11 +29,21 @@ type BoltzDestinationProps = {
   proceedToNext: (swapDetails: BoltzSwapResponse) => void;
 };
 
+const useStyles = makeStyles(() =>
+  createStyles({
+    input: {
+      borderRadius: 0,
+    },
+  })
+);
+
 const BoltzDestination = (props: BoltzDestinationProps): ReactElement => {
   const { proceedToNext } = props;
+  const classes = useStyles();
   const receiveAmount = useAppSelector(selectReceiveAmount);
   const receiveCurrency = useAppSelector(selectReceiveAsset);
   const sendCurrency = useAppSelector(selectSendAsset);
+  const units = useAppSelector(selectUnit);
   const [invoice, setInvoice] = useState('');
   const [error, setError] = useState('');
   const [downloadRefundFile, setDownloadRefundFile] = useState(true);
@@ -35,9 +54,11 @@ const BoltzDestination = (props: BoltzDestinationProps): ReactElement => {
   const [refundDetails, setRefundDetails] = useState<RefundDetails | undefined>(
     undefined
   );
+  const [displayedAmount, setDisplayedAmount] = useState('');
 
-  const invoiceText = `${receiveAmount} ${receiveCurrency}`;
-  const invoiceFieldText = `Invoice for ${invoiceText}`;
+  const invoiceFieldText = `Invoice for ${displayedAmount} ${
+    units[boltzPairsMap(receiveCurrency)].id
+  }`;
 
   const invoiceValid = invoice => !invoice || isInvoiceValid(invoice);
 
@@ -98,7 +119,11 @@ const BoltzDestination = (props: BoltzDestinationProps): ReactElement => {
         <>
           Paste invoice to receive
           <br />
-          {invoiceText}
+          <BoltzAmount
+            amountInMainUnit={receiveAmount}
+            currency={receiveCurrency}
+            onDisplayedAmountChange={setDisplayedAmount}
+          />
         </>
       }
       content={
@@ -107,6 +132,7 @@ const BoltzDestination = (props: BoltzDestinationProps): ReactElement => {
             multiline
             fullWidth
             variant="outlined"
+            className={classes.input}
             aria-label={invoiceFieldText}
             rows={5}
             placeholder={invoiceFieldText}

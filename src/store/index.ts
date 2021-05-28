@@ -1,9 +1,11 @@
 import { configureStore } from '@reduxjs/toolkit';
+import boltzReducer from './boltz-slice';
 import swapsReducer from './swaps-slice';
 
 export const store = configureStore({
   reducer: {
     swaps: swapsReducer,
+    boltz: boltzReducer,
   },
 });
 

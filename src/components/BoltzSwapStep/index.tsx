@@ -23,6 +23,7 @@ const useStyles = makeStyles(() =>
       fontSize: '1.5rem',
       lineHeight: 'normal',
       letterSpacing: '1px',
+      width: '100%',
     },
   })
 );

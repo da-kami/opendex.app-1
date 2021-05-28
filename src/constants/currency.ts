@@ -204,3 +204,47 @@ export const CurrencyByID: Record<CurrencyID, CurrencyOption> = {
   },
 };
 export const CurrencyOptions: CurrencyOption[] = Object.values(CurrencyByID);
+
+export type FundTransferType = {
+  id: string;
+  value: string;
+};
+
+type FundTransferTypes = {
+  [key: string]: FundTransferType[];
+};
+
+export const fundTransferTypes: FundTransferTypes = {
+  BTC: [
+    {
+      id: 'Sats',
+      value: '1',
+    },
+    {
+      id: 'BTC',
+      value: '2',
+    },
+  ],
+  LTC: [
+    {
+      id: 'Litoshi',
+      value: '1',
+    },
+    {
+      id: 'LTC',
+      value: '2',
+    },
+  ],
+  ETH: [
+    {
+      id: 'Ether',
+      value: '2',
+    },
+  ],
+  USDT: [
+    {
+      id: 'USDT',
+      value: '2',
+    },
+  ],
+};
