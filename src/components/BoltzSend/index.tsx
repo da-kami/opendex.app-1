@@ -8,18 +8,19 @@ import {
 import React, { ReactElement, useEffect } from 'react';
 import {
   BoltzSwapResponse,
-  swapError,
+  StatusResponse,
   SwapUpdateEvent,
 } from '../../constants/boltzSwap';
 import { useAppSelector } from '../../store/hooks';
 import { selectSendAsset } from '../../store/swaps-slice';
+import { swapError } from '../../utils/boltzSwapStatus';
 import BoltzSwapStep from '../BoltzSwapStep';
 import Button from '../Button';
 import DrawQrCode from '../DrawQrCode';
 
 type BoltzSendProps = {
   swapDetails: BoltzSwapResponse;
-  swapStatus?: SwapUpdateEvent;
+  swapStatus?: StatusResponse;
   proceedToNext: () => void;
 };
 
@@ -43,7 +44,7 @@ const BoltzSend = (props: BoltzSendProps): ReactElement => {
   } ${sendCurrency} to`;
 
   const isWaitingForTransaction =
-    !swapStatus || swapStatus === SwapUpdateEvent.InvoiceSet;
+    !swapStatus || swapStatus.status === SwapUpdateEvent.InvoiceSet;
 
   useEffect(() => {
     if (swapStatus && swapError(swapStatus)) {

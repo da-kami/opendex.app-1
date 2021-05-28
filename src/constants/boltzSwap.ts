@@ -1,3 +1,4 @@
+import { Transaction } from 'bitcoinjs-lib';
 import CurrencyID from './currency';
 
 export type BoltzSwapResponse = {
@@ -21,6 +22,7 @@ export type RefundDetails = {
 
 export type StatusResponse = {
   status: SwapUpdateEvent;
+  failureReason: string;
 };
 
 export type StatusStep = {
@@ -28,6 +30,20 @@ export type StatusStep = {
   initialText?: string;
   textComplete: string;
 };
+
+export type SwapTransaction = {
+  transactionHex: string;
+  timeoutBlockHeight: number;
+  timeoutEta?: number;
+  error?: string;
+};
+
+export type RefundTransaction = {
+  refundTransaction: Transaction;
+  lockupTransactionId: string;
+};
+
+export type FeeResponse = { [key: string]: number };
 
 export enum SwapUpdateEvent {
   InvoicePaid = 'invoice.paid',
@@ -76,48 +92,3 @@ export const swapSteps: StatusStep[] = [
     textComplete: 'Transaction complete',
   },
 ];
-
-export const swapError = (status: SwapUpdateEvent): string => {
-  if (
-    swapSteps
-      .map(step => step.status)
-      .concat([SwapUpdateEvent.InvoiceSet])
-      .some(step => step.includes(status))
-  ) {
-    return '';
-  }
-  if (status === SwapUpdateEvent.InvoiceFailedToPay) {
-    return 'Failed to pay the invoice. Please refund your coins.';
-  }
-  if (status === SwapUpdateEvent.TransactionLockupFailed) {
-    return 'Deposited amount is insufficient. Please refund your coins.';
-  }
-  if (status === SwapUpdateEvent.SwapExpired) {
-    return 'Swap expired. Please refund your coins if you transferred any to the provided address.';
-  }
-  return 'Error: Unknown status';
-};
-export const addRefundDetailsToLocalStorage = (
-  details: RefundDetails
-): void => {
-  const boltzSwaps = getBoltzSwapsFromLocalStorage();
-  boltzSwaps.push(details);
-  setBoltzSwapsToLocalStorage(boltzSwaps);
-};
-
-export const removeRefundDetailsFromLocalStorage = (swapId: string): void => {
-  const boltzSwaps = getBoltzSwapsFromLocalStorage();
-  const swapIndex = boltzSwaps.findIndex(swap => swap.swapId === swapId);
-  if (swapIndex !== -1) {
-    boltzSwaps.splice(swapIndex, 1);
-    setBoltzSwapsToLocalStorage(boltzSwaps);
-  }
-};
-
-const getBoltzSwapsFromLocalStorage = (): RefundDetails[] => {
-  return JSON.parse(localStorage.getItem('boltzSwaps') || '[]');
-};
-
-const setBoltzSwapsToLocalStorage = (swaps: RefundDetails[]): void => {
-  localStorage.setItem('boltzSwaps', JSON.stringify(swaps));
-};

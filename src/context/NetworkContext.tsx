@@ -14,7 +14,7 @@ type BlockExplorerConfiguration = {
   transaction: string;
 };
 
-type BoltzConfiguration = {
+export type BoltzConfiguration = {
   infuraId: string;
   apiEndpoint: string;
 

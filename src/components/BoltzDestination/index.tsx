@@ -2,11 +2,7 @@ import { FormControlLabel, Grid, Switch, TextField } from '@material-ui/core';
 import React, { ReactElement, useEffect, useState } from 'react';
 import { BOLTZ_CREATE_SWAP_API_URL } from '../../api/boltzApiUrls';
 import { boltzPairsMap } from '../../constants/boltzRates';
-import {
-  addRefundDetailsToLocalStorage,
-  BoltzSwapResponse,
-  RefundDetails,
-} from '../../constants/boltzSwap';
+import { BoltzSwapResponse, RefundDetails } from '../../constants/boltzSwap';
 import { useBoltzConfiguration } from '../../context/NetworkContext';
 import { isInvoiceValid } from '../../services/submarine/invoiceValidation';
 import { generateKeys } from '../../services/submarine/keys';
@@ -16,6 +12,7 @@ import {
   selectReceiveAsset,
   selectSendAsset,
 } from '../../store/swaps-slice';
+import { addRefundDetailsToLocalStorage } from '../../utils/boltzRefund';
 import BoltzSwapStep from '../BoltzSwapStep';
 import DownloadRefundFile from '../DownloadRefundFile';
 

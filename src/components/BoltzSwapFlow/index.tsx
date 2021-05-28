@@ -1,19 +1,14 @@
 import { createStyles, makeStyles } from '@material-ui/core';
 import React, { ReactElement, useCallback, useMemo, useState } from 'react';
-import { BOLTZ_STREAM_SWAP_STATUS_API_URL } from '../../api/boltzApiUrls';
-import {
-  BoltzSwapResponse,
-  removeRefundDetailsFromLocalStorage,
-  StatusResponse,
-  SwapUpdateEvent,
-} from '../../constants/boltzSwap';
+import { BoltzSwapResponse, StatusResponse } from '../../constants/boltzSwap';
 import CurrencyID from '../../constants/currency';
 import { useBoltzConfiguration } from '../../context/NetworkContext';
 import { useAppSelector } from '../../store/hooks';
 import { selectReceiveAsset, selectSendAsset } from '../../store/swaps-slice';
+import { startListening } from '../../utils/boltzSwapStatus';
 import BoltzDestination from '../BoltzDestination';
 import BoltzSend from '../BoltzSend';
-import BoltzStatus from '../BoltzStatus';
+import BoltzSwapStatus from '../BoltzSwapStatus';
 
 const useStyles = makeStyles(() =>
   createStyles({
@@ -26,38 +21,6 @@ const useStyles = makeStyles(() =>
   })
 );
 
-const startListening = (
-  swapId: string,
-  apiEndpoint: string,
-  onMessage: (data: StatusResponse) => void
-) => {
-  const stream = new EventSource(
-    `${BOLTZ_STREAM_SWAP_STATUS_API_URL(apiEndpoint)}?id=${swapId}`
-  );
-  stream.onmessage = function (event) {
-    const data = JSON.parse(event.data);
-    onMessage(data);
-    if (
-      [
-        SwapUpdateEvent.TransactionClaimed,
-        SwapUpdateEvent.InvoiceFailedToPay,
-        SwapUpdateEvent.TransactionLockupFailed,
-        SwapUpdateEvent.SwapExpired,
-      ].includes(data.status)
-    ) {
-      stream.close();
-      if (SwapUpdateEvent.TransactionClaimed === data.status) {
-        removeRefundDetailsFromLocalStorage(swapId);
-      }
-    }
-  };
-  stream.onerror = event => {
-    console.log('error:', event);
-    stream?.close();
-    setTimeout(() => startListening(swapId, apiEndpoint, onMessage), 2000);
-  };
-};
-
 const BoltzSwapFlow = (): ReactElement => {
   const classes = useStyles();
   const receiveCurrency = useAppSelector(selectReceiveAsset);
@@ -66,7 +29,7 @@ const BoltzSwapFlow = (): ReactElement => {
   const [swapDetails, setSwapDetails] = useState<BoltzSwapResponse | undefined>(
     undefined
   );
-  const [swapStatus, setSwapStatus] = useState<SwapUpdateEvent | undefined>(
+  const [swapStatus, setSwapStatus] = useState<StatusResponse | undefined>(
     undefined
   );
   const { apiEndpoint } = useBoltzConfiguration();
@@ -81,7 +44,7 @@ const BoltzSwapFlow = (): ReactElement => {
       setSwapDetails(swapDetails);
       proceedToNext();
       startListening(swapDetails.id, apiEndpoint, data => {
-        setSwapStatus(data.status);
+        setSwapStatus(data);
       });
     },
     [proceedToNext, apiEndpoint]
@@ -101,7 +64,7 @@ const BoltzSwapFlow = (): ReactElement => {
       swapStatus={swapStatus}
       proceedToNext={proceedToNext}
     />,
-    <BoltzStatus swapDetails={swapDetails!} swapStatus={swapStatus!} />,
+    <BoltzSwapStatus swapStatus={swapStatus!} />,
   ];
 
   return (
