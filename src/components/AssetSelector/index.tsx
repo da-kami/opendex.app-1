@@ -30,6 +30,7 @@ const AssetSelector = props => {
     selectedAsset,
     placeholder,
     loading,
+    error,
   } = props;
 
   return loading ? (
@@ -42,6 +43,8 @@ const AssetSelector = props => {
       autoFocus
       fullWidth
       placeholder={placeholder}
+      error={!!error}
+      helperText={error}
       InputProps={{
         endAdornment: (
           <SelectComponent

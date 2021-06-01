@@ -16,6 +16,7 @@ import {
   AmountPreview,
   CurrencyAmount,
   CurrencyPair,
+  Limits,
   RatesFetcher,
   RatesFetcherOpts,
 } from './rates';
@@ -172,16 +173,16 @@ type BoltzPair = {
     };
   };
   rate: number;
-  /* TODO: implement later
   limits: {
     maximal: number;
     minimal: number;
+    /* TODO: implement later
     maximalZeroConf: {
       baseAsset: number; // number
       quoteAsset: number; // number
     };
-  };
   */
+  };
 };
 
 type BoltzGetRatesResponse = {
@@ -250,9 +251,28 @@ export default class BoltzFetcher implements RatesFetcher {
       .toPromise();
   }
 
-  // define which trading pair is suppported by the fetcher implementation
+  // define which trading pair is supported by the fetcher implementation
   public isPairSupported(pair: CurrencyPair): boolean {
     return true;
+  }
+
+  public getLimits(pair: CurrencyPair): Promise<Limits> {
+    return this.rates$
+      .pipe(
+        map(rates => {
+          const base = boltzPairsMap(pair[0]);
+          const quote = boltzPairsMap(pair[1]);
+          const rate: BoltzPair =
+            rates.pairs[`${base}/${quote}`] || rates[`${quote}/${base}`];
+          const limits = {
+            minimal: new BigNumber(rate.limits.minimal).dividedBy(10 ** 8),
+            maximal: new BigNumber(rate.limits.maximal).dividedBy(10 ** 8),
+          };
+          return limits;
+        }),
+        take(1)
+      )
+      .toPromise();
   }
 
   public clean(): void {

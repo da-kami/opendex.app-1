@@ -14,6 +14,11 @@ export interface CurrencyAmount {
   currency: CurrencyID;
 }
 
+export interface Limits {
+  minimal: BigNumber;
+  maximal: BigNumber;
+}
+
 export interface AmountPreview {
   // This is comprehensive of swap provider fees
   amountWithFees: CurrencyAmount;
@@ -41,4 +46,6 @@ export interface RatesFetcher {
 
   // define wich trading pair is suppported by the fetcher implementation
   isPairSupported(pair: CurrencyPair): boolean;
+  // define the minimal and maximal values that apply to the receive amount
+  getLimits?(pair: CurrencyPair): Promise<Limits>;
 }
