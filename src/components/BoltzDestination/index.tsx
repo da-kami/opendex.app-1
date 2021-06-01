@@ -47,7 +47,11 @@ const BoltzDestination = (props: BoltzDestinationProps): ReactElement => {
   const [invoice, setInvoice] = useState('');
   const [error, setError] = useState('');
   const [downloadRefundFile, setDownloadRefundFile] = useState(true);
-  const { apiEndpoint, bitcoinConstants } = useBoltzConfiguration();
+  const {
+    apiEndpoint,
+    bitcoinConstants,
+    litecoinConstants,
+  } = useBoltzConfiguration();
   const [keys, setKeys] = useState<{ publicKey?: string; privateKey?: string }>(
     {}
   );
@@ -65,8 +69,12 @@ const BoltzDestination = (props: BoltzDestinationProps): ReactElement => {
   const nextEnabled = !!invoice && isInvoiceValid(invoice);
 
   useEffect(() => {
-    setKeys(generateKeys(bitcoinConstants));
-  }, [sendCurrency, receiveCurrency, bitcoinConstants]);
+    const network =
+      boltzPairsMap(receiveCurrency) === 'BTC'
+        ? bitcoinConstants
+        : litecoinConstants;
+    setKeys(generateKeys(network));
+  }, [sendCurrency, receiveCurrency, bitcoinConstants, litecoinConstants]);
 
   const createSwap = () => {
     const params = {

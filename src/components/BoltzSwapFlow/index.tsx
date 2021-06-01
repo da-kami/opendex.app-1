@@ -52,8 +52,10 @@ const BoltzSwapFlow = (): ReactElement => {
 
   const isPairImplemented = () => {
     return (
-      sendCurrency === CurrencyID.BTC &&
-      receiveCurrency === CurrencyID.LIGHTNING_BTC
+      (sendCurrency === CurrencyID.BTC &&
+        receiveCurrency === CurrencyID.LIGHTNING_BTC) ||
+      (sendCurrency === CurrencyID.LTC &&
+        receiveCurrency === CurrencyID.LIGHTNING_LTC)
     );
   };
 

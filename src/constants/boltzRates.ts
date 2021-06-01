@@ -48,6 +48,7 @@ export const boltzPairsMap = (currency: CurrencyID) => {
 const isCurrencyOnChain = (currency: CurrencyID) => {
   switch (currency) {
     case CurrencyID.BTC:
+    case CurrencyID.LTC:
       return true;
     case CurrencyID.ETH:
       return true;
