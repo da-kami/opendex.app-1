@@ -10,9 +10,6 @@ describe('getSwapProvider', () => {
     expect(getSwapProvider(Currency.LIQUID_USDT, Currency.LIQUID_BTC)).toEqual(
       SwapProvider.TDEX
     );
-    expect(getSwapProvider(Currency.MONERO, Currency.BTC)).toEqual(
-      SwapProvider.COMIT
-    );
     expect(getSwapProvider(Currency.BTC, Currency.MONERO)).toEqual(
       SwapProvider.COMIT
     );
@@ -36,5 +33,6 @@ describe('getSwapProvider', () => {
       undefined
     );
     expect(getSwapProvider(Currency.LTC, Currency.BTC)).toEqual(undefined);
+    expect(getSwapProvider(Currency.MONERO, Currency.BTC)).toEqual(undefined);
   });
 });
