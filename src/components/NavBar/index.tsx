@@ -10,6 +10,7 @@ import { createStyles, makeStyles } from '@material-ui/core/styles';
 import Divider from '../Divider';
 import Logo from '../Logo/';
 import Menu from '../Menu';
+import React from 'react';
 
 const useStyles = makeStyles(() =>
   createStyles({

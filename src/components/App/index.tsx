@@ -9,6 +9,7 @@ import HomePage from '../../pages/home';
 import { Path } from './path';
 import { theme } from './theme';
 import { NetworkProvider } from '../../context/NetworkContext';
+import React from 'react';
 
 const history = createBrowserHistory();
 

@@ -1,5 +1,6 @@
 import { Box, MenuItem, TextField } from '@material-ui/core';
 import { Network, useNetwork } from '../../context/NetworkContext';
+import React from 'react';
 
 const NetworkSelection = () => {
   const { network, setNetwork } = useNetwork();

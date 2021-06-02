@@ -47,8 +47,8 @@
     "storybook": "start-storybook -p 6006 -s public",
     "storybook:no-cache": "start-storybook -p 6006 -s public --no-manager-cache",
     "build-storybook": "build-storybook -s public",
-    "prettier": "prettier --write src/ public/",
-    "prettier:check": "prettier --check src/ public/"
+    "prettier": "prettier --write src public",
+    "prettier:check": "prettier --check src public"
   },
   "eslintConfig": {
     "extends": "react-app",

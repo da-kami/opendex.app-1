@@ -13,6 +13,7 @@ import {
   selectSwapStep,
 } from '../store/swaps-slice';
 import NetworkSelection from '../components/NetworkSelection';
+import React from 'react';
 
 export type HomePageProps = {};
 
