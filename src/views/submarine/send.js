@@ -94,9 +94,8 @@ const Send = props => {
   const [fundsApproved, setFundsApproved] = React.useState(null);
   const [fundsSent, setFundsSent] = React.useState(null);
   const [feeEstimations, setFeeEstimations] = React.useState(null);
-  const [feeEstimationAnchorEl, setFeeEstimationAnchorEl] = React.useState(
-    null
-  );
+  const [feeEstimationAnchorEl, setFeeEstimationAnchorEl] =
+    React.useState(null);
 
   let swapContract;
   let tokenContract;

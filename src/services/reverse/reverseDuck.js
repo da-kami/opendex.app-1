@@ -280,79 +280,78 @@ export const claimSwap = async (
   nextStage();
 };
 
-export const handleReverseSwapStatus = (
-  { instantSwap, privateKey, address, preImage },
-  signer
-) => (data, source, dispatch, nextStage, swapInfo, response) => {
-  const closeSource = () => {
-    if (source) {
-      source.close();
+export const handleReverseSwapStatus =
+  ({ instantSwap, privateKey, address, preImage }, signer) =>
+  (data, source, dispatch, nextStage, swapInfo, response) => {
+    const closeSource = () => {
+      if (source) {
+        source.close();
+      }
+    };
+
+    const status = data.status;
+    const swapDetails = { ...swapInfo, privateKey, address, preImage };
+
+    // If this function is called with the data from the GET endpoint "/swapstatus"
+    // it could be that the received status has already been handled
+    if (status === latestSwapEvent) {
+      return;
+    } else {
+      latestSwapEvent = status;
     }
-  };
 
-  const status = data.status;
-  const swapDetails = { ...swapInfo, privateKey, address, preImage };
+    switch (status) {
+      case SwapUpdateEvent.TransactionMempool:
+        dispatch(
+          reverseSwapResponse({
+            transactionId: data.transaction.id,
+            transactionHex: data.transaction.hex,
+          })
+        );
 
-  // If this function is called with the data from the GET endpoint "/swapstatus"
-  // it could be that the received status has already been handled
-  if (status === latestSwapEvent) {
-    return;
-  } else {
-    latestSwapEvent = status;
-  }
+        if (instantSwap) {
+          closeSource();
+          claimSwap(dispatch, nextStage, signer, swapDetails, {
+            ...response,
+            transactionId: data.transaction.id,
+            transactionHex: data.transaction.hex,
+          });
+        }
 
-  switch (status) {
-    case SwapUpdateEvent.TransactionMempool:
-      dispatch(
-        reverseSwapResponse({
-          transactionId: data.transaction.id,
-          transactionHex: data.transaction.hex,
-        })
-      );
+        break;
 
-      if (instantSwap) {
+      case SwapUpdateEvent.TransactionConfirmed:
         closeSource();
         claimSwap(dispatch, nextStage, signer, swapDetails, {
           ...response,
           transactionId: data.transaction.id,
           transactionHex: data.transaction.hex,
         });
-      }
+        break;
 
-      break;
+      case SwapUpdateEvent.MinerFeePaid:
+        dispatch(setEthereumPrepayMinerFeePaid(true));
+        break;
 
-    case SwapUpdateEvent.TransactionConfirmed:
-      closeSource();
-      claimSwap(dispatch, nextStage, signer, swapDetails, {
-        ...response,
-        transactionId: data.transaction.id,
-        transactionHex: data.transaction.hex,
-      });
-      break;
+      case SwapUpdateEvent.SwapExpired:
+      case SwapUpdateEvent.TransactionRefunded:
+        closeSource();
+        dispatch(setReverseSwapStatus('Timelock expired'));
+        dispatch(reverseSwapResponse(false, {}));
 
-    case SwapUpdateEvent.MinerFeePaid:
-      dispatch(setEthereumPrepayMinerFeePaid(true));
-      break;
+        break;
 
-    case SwapUpdateEvent.SwapExpired:
-    case SwapUpdateEvent.TransactionRefunded:
-      closeSource();
-      dispatch(setReverseSwapStatus('Timelock expired'));
-      dispatch(reverseSwapResponse(false, {}));
+      case SwapUpdateEvent.TransactionFailed:
+        closeSource();
+        dispatch(setReverseSwapStatus('Could not send onchain coins'));
+        dispatch(reverseSwapResponse(false, {}));
+        break;
 
-      break;
-
-    case SwapUpdateEvent.TransactionFailed:
-      closeSource();
-      dispatch(setReverseSwapStatus('Could not send onchain coins'));
-      dispatch(reverseSwapResponse(false, {}));
-      break;
-
-    default:
-      console.log(`Unknown swap status: ${JSON.stringify(data)}`);
-      break;
-  }
-};
+      default:
+        console.log(`Unknown swap status: ${JSON.stringify(data)}`);
+        break;
+    }
+  };
 
 export const createReverseSwap = (
   dispatch,

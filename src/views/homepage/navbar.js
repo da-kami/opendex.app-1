@@ -38,11 +38,8 @@ export default () => {
 
   const anchorRef = useRef(null);
 
-  const {
-    setReverseActiveStep,
-    setSubmarineActiveStep,
-    setRefundActiveStep,
-  } = useContext(StepsContext);
+  const { setReverseActiveStep, setSubmarineActiveStep, setRefundActiveStep } =
+    useContext(StepsContext);
   const utilsContext = useContext(UtilsContext);
   const isMobileView = !!utilsContext?.isMobileView;
 

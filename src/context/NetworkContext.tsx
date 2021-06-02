@@ -65,12 +65,10 @@ const useBlockExplorers = (): Map<CurrencyID, BlockExplorerConfiguration> => {
 
   for (const currency of Object.keys(CurrencyID)) {
     const blockExplorer: BlockExplorerConfiguration = {
-      address: process.env[
-        `REACT_APP_${network}_EXPLORER_${currency}_ADDRESS`
-      ]!,
-      transaction: process.env[
-        `REACT_APP_${network}_EXPLORER_${currency}_TRANSACTION`
-      ]!,
+      address:
+        process.env[`REACT_APP_${network}_EXPLORER_${currency}_ADDRESS`]!,
+      transaction:
+        process.env[`REACT_APP_${network}_EXPLORER_${currency}_TRANSACTION`]!,
     };
 
     if (

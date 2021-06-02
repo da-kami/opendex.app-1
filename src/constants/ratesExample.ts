@@ -117,8 +117,7 @@ export default class ExampleFetcherWithInitalizer implements RatesFetcher {
     // here I can do all my async initiazization and instantiate my class as I wish
     return {
       useInterval: false,
-      url:
-        'https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd',
+      url: 'https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd',
     };
   }
 
@@ -126,8 +125,7 @@ export default class ExampleFetcherWithInitalizer implements RatesFetcher {
     // here I can do all my async initiazization and instantiate my class as I wish
     return {
       useInterval: true,
-      url:
-        'https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd',
+      url: 'https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd',
     };
   }
 }

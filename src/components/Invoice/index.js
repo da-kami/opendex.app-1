@@ -15,13 +15,8 @@ import { timeUntilExpiry } from '../../utils/invoiceDecoder';
 import { getETALabelWithSeconds } from '../../services/refund/timestamp';
 
 const Invoice = props => {
-  const {
-    invoice,
-    lockupLink,
-    isMobileView,
-    statusMessage,
-    currencySymbol,
-  } = props;
+  const { invoice, lockupLink, isMobileView, statusMessage, currencySymbol } =
+    props;
 
   const [etaTimeDiffLabel, setEtaTimeDiffLabel] = useState('');
   const [etaLeft, setETALeft] = useState(timeUntilExpiry(invoice));

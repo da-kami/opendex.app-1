@@ -14,13 +14,8 @@ class DownloadRefundFile extends React.Component {
   }
 
   render() {
-    const {
-      id,
-      currency,
-      privateKey,
-      redeemScript,
-      timeoutBlockHeight,
-    } = this.props;
+    const { id, currency, privateKey, redeemScript, timeoutBlockHeight } =
+      this.props;
 
     const isTorBrowser = detectTorBrowser();
 

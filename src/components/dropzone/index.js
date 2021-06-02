@@ -62,14 +62,8 @@ class DropZone extends React.Component {
   };
 
   render() {
-    const {
-      className,
-      style,
-      children,
-      width,
-      height,
-      ...otherProps
-    } = this.props;
+    const { className, style, children, width, height, ...otherProps } =
+      this.props;
     return (
       <div
         className={`${className} drop-area ${
