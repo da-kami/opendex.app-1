@@ -20,11 +20,11 @@
     "decimal.js": "^10.2.1",
     "ethers": "^5.0.31",
     "is_js": "^0.9.0",
-    "libp2p": "^0.30.12",
-    "libp2p-mplex": "^0.10.2",
-    "libp2p-noise": "^2.0.5",
+    "libp2p": "^0.31.6",
+    "libp2p-mplex": "^0.10.3",
+    "libp2p-noise": "^3.0.0",
     "libp2p-tcp": "^0.15.4",
-    "libp2p-websockets": "^0.15.5",
+    "libp2p-websockets": "^0.15.7",
     "node-sass": "^4.14.1",
     "prop-types": "^15.7.2",
     "qrcode-parser": "^1.2.0",
@@ -48,10 +48,6 @@
     "rxjs": "^6.6.6",
     "use-async-effect": "^2.2.3",
     "web3modal": "^1.9.3"
-  },
-  "resolutions": {
-    "**/uint8arrays": "2.1.4",
-    "**/multibase": "4.0.4"
   },
   "scripts": {
     "start": "BROWSER=none react-scripts start",

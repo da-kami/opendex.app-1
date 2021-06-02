@@ -1,7 +1,7 @@
 import Libp2p from 'libp2p';
 import { NOISE } from 'libp2p-noise';
 import filters from 'libp2p-websockets/src/filters';
-import { Multiaddr }  from 'multiaddr';
+import { Multiaddr } from 'multiaddr';
 import PeerId from 'peer-id';
 import WebSockets from 'libp2p-websockets';
 import MPLEX from 'libp2p-mplex';
