@@ -11,12 +11,13 @@ const ASB_PEER_ID = 'tbd';
 const TESTNET_ONION =
   'ac4hgzmsmekwekjbdl77brufqqbylddugzze4tel6qsnlympgmr46iid';
 const QUOTE_WS_TESTNET =
-  'ws://' + TESTNET_ONION + '.onion:3030/api/quote/xmr-btc';
-const ASB_MULTI_ADR_TESTNET = '/onion3/' + TESTNET_ONION + ':9939';
+    'ws://xmr-btc-asb.coblox.tech:3030/api/quote/xmr-btc';
+const ASB_MULTI_ADR_TESTNET = '/dnsaddr/xmr-btc-asb.coblox.tech';
 const ASB_PEER_ID_TESTNET =
   '12D3KooWCdMKjesXMJz1SiZ7HgotrxuqhQJbP5sgBm2BwP1cqThi';
 
 export function getQuoteWebsocketForNetwork(network: Network): string {
+  console.log(QUOTE_WS_TESTNET);
   return network === Network.Mainnet ? QUOTE_WS : QUOTE_WS_TESTNET;
 }
 
