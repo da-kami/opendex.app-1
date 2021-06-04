@@ -71,8 +71,9 @@ const ComitSwapFlow = (): ReactElement => {
     );
   }
 
+  // TODO: Properly distinguish between error and status...
   if (error) {
-    return <div>Error encountered while fetching price: {error.message}</div>;
+    return <div>{error.message}</div>;
   }
 
   if (!quote) {
@@ -97,6 +98,19 @@ const ComitSwapFlow = (): ReactElement => {
         and receive approx.
         <Box className={classes.amount}>
           {youReceive.toXmrString() + ' XMR'}
+        </Box>
+      </Box>
+      <Box
+        display="flex"
+        flexDirection="row"
+        alignItems="center"
+        p={1}
+        m={1}
+        className={classes.text}
+      >
+        Provider's minimum send quantity per swap:{' '}
+        <Box className={classes.amount}>
+          {quote.min_quantity.toBtcString()} BTC
         </Box>
       </Box>
       <Box

@@ -1,65 +1,63 @@
-import { useState } from 'react';
-import { useInterval } from 'react-use';
+import { useEffect, useState } from 'react';
 import { XmrBtcRateFetcher } from './XmrBtcRateFetcher';
-import useAsyncEffect from 'use-async-effect';
-import { Quote } from './Asb';
+import { getQuoteWebsocketForNetwork, intoQuote, Quote } from './Asb';
 import { useNetwork } from '../../context/NetworkContext';
+import useWebSocket, { ReadyState } from 'react-use-websocket';
 
 export default function useComitRate(): {
   rateFetcher: XmrBtcRateFetcher | null;
   latestQuote: Quote | null;
   error: Error | null;
 } {
-  let [xmrBtcRateFetcher, setXmrBtcRateFetcher] = useState<{
-    rateFetcher: XmrBtcRateFetcher | null;
-    error: Error | null;
-  }>({ rateFetcher: null, error: null });
-
   let [quote, setQuote] = useState<{
     quote: Quote | null;
     error: Error | null;
   }>({ quote: null, error: null });
 
+  let [xmrBtcRateFetcher, setXmrBtcRateFetcher] =
+    useState<XmrBtcRateFetcher | null>(null);
+
   const { network } = useNetwork();
 
-  // TODO: Evaluate if this will actually be properly updated upon network change
-  useAsyncEffect(async () => {
-    if (!xmrBtcRateFetcher || !xmrBtcRateFetcher.rateFetcher) {
-      try {
-        const rateFetcher = await XmrBtcRateFetcher.newInstance(network);
-        setXmrBtcRateFetcher({ rateFetcher, error: null });
-      } catch (error) {
-        console.error(error);
-        setXmrBtcRateFetcher({ rateFetcher: null, error });
-      }
-    }
-  }, [network]);
+  let quoteWsAddr = getQuoteWebsocketForNetwork(network);
+  const { lastJsonMessage, readyState } = useWebSocket(quoteWsAddr);
 
-  // Drive the refresh rate of the XmrBtcRateFetcher and keep the latest quote internally
-  useInterval(
-    async () => {
-      if (xmrBtcRateFetcher.rateFetcher) {
-        try {
-          let quote = await xmrBtcRateFetcher.rateFetcher.refresh();
-          setQuote({ quote, error: null });
-        } catch (error) {
-          console.error(error);
-          setQuote({ quote: null, error });
-        }
+  if (!xmrBtcRateFetcher) {
+    setXmrBtcRateFetcher(new XmrBtcRateFetcher(null, null));
+  }
+
+  useEffect(() => {
+    if (!xmrBtcRateFetcher) {
+      return;
+    }
+
+    if (readyState === ReadyState.OPEN && lastJsonMessage) {
+      let quoteOrError = intoQuote(lastJsonMessage);
+      if (quoteOrError instanceof Quote) {
+        setQuote({ quote: quoteOrError, error: null });
+        xmrBtcRateFetcher.updateQuote(quoteOrError);
+      } else {
+        setQuote({ quote: null, error: quoteOrError });
+        xmrBtcRateFetcher.updateError(quoteOrError);
       }
-    },
-    xmrBtcRateFetcher ? 5000 : null
-  );
+    } else if (readyState === ReadyState.CONNECTING) {
+      setQuote({
+        quote: null,
+        error: new Error('Waiting for latest price...'),
+      });
+      xmrBtcRateFetcher.updateQuote(null);
+    } else if (readyState === ReadyState.CLOSED) {
+      setQuote({
+        quote: null,
+        error: new Error('Failed to fetch latest price'),
+      });
+      xmrBtcRateFetcher.updateQuote(null);
+    }
+  }, [readyState, lastJsonMessage, xmrBtcRateFetcher]);
 
   return {
-    rateFetcher: xmrBtcRateFetcher.rateFetcher
-      ? xmrBtcRateFetcher.rateFetcher
-      : null,
+    rateFetcher: xmrBtcRateFetcher,
     latestQuote: quote.quote ? quote.quote : null,
-    error: xmrBtcRateFetcher.error
-      ? xmrBtcRateFetcher.error
-      : quote.error
-      ? quote.error
-      : null,
+    error: quote.error ? quote.error : null,
   };
 }

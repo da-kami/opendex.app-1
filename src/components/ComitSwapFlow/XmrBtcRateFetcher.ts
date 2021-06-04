@@ -1,7 +1,7 @@
 import CurrencyID from '../../constants/currency';
 import { BitcoinAmount } from './BitcoinAmount';
 import { MoneroAmount } from './MoneroAmount';
-import { Asb, Quote } from './Asb';
+import { Quote } from './Asb';
 import {
   AmountPreview,
   CurrencyAmount,
@@ -9,21 +9,9 @@ import {
   RatesFetcher,
 } from '../../constants/rates';
 import BigNumber from 'bignumber.js';
-import { Network } from '../../context/NetworkContext';
 
 export class XmrBtcRateFetcher implements RatesFetcher {
-  private constructor(
-    private readonly asb: Asb,
-    private latestQuote: Quote | null,
-    private refreshError: Error | null
-  ) {}
-
-  public static async newInstance(
-    network: Network
-  ): Promise<XmrBtcRateFetcher> {
-    let asb = await Asb.newInstance(network);
-    return new XmrBtcRateFetcher(asb, null, null);
-  }
+  constructor(private latestQuote: Quote | null, private error: Error | null) {}
 
   previewGivenSend(
     amountWithCurrency: CurrencyAmount,
@@ -88,15 +76,12 @@ export class XmrBtcRateFetcher implements RatesFetcher {
     return this.getQuote().max_quantity;
   }
 
-  async refresh(): Promise<Quote> {
-    try {
-      this.latestQuote = await this.asb.quote();
-      console.log(this.latestQuote.price.toBtcString());
-      return this.latestQuote;
-    } catch (error) {
-      console.log(error);
-      throw error;
-    }
+  updateError(error: Error | null) {
+    this.error = error;
+  }
+
+  updateQuote(quote: Quote | null) {
+    this.latestQuote = quote;
   }
 
   // At the moment we only support send BTC receive XMR swaps, once the protocol where
@@ -114,8 +99,8 @@ export class XmrBtcRateFetcher implements RatesFetcher {
 
   private ensureNoRefreshErrors() {
     // Might want to implement more elaborate error handline strategies
-    if (this.refreshError) {
-      throw this.refreshError;
+    if (this.error) {
+      throw this.error;
     }
   }
 

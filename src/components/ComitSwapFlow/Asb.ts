@@ -1,45 +1,55 @@
-import Libp2p from 'libp2p';
-import { NOISE } from 'libp2p-noise';
-import filters from 'libp2p-websockets/src/filters';
-import { Multiaddr } from 'multiaddr';
-import PeerId from 'peer-id';
-import WebSockets from 'libp2p-websockets';
-import MPLEX from 'libp2p-mplex';
 import { BitcoinAmount } from './BitcoinAmount';
-import wrap from 'it-pb-rpc';
 import { Network } from '../../context/NetworkContext';
 
-const QUOTE_PROTOCOL = '/comit/xmr/btc/bid-quote/1.0.0';
+// TODO: Community member to plug in mainnet address
+const MAINNET_ONION = 'tbd';
+const QUOTE_WS = 'ws://' + MAINNET_ONION + '.onion:3030/api/quote/xmr-btc';
+const ASB_MULTI_ADR = '/onion3/' + MAINNET_ONION + ':9939';
+// TODO: Community member to plug in mainnet peer-id
+const ASB_PEER_ID = 'tbd';
 
-// TODO: Mainnet address
-const ASB_MULTI_ADR = '/dnsaddr/xmr-btc-asb.coblox.tech';
-const ASB_PEER_ID = '12D3KooWCdMKjesXMJz1SiZ7HgotrxuqhQJbP5sgBm2BwP1cqThi';
-
-const ASB_MULTI_ADR_TESTNET = '/dnsaddr/xmr-btc-asb.coblox.tech';
+const TESTNET_ONION =
+  'ac4hgzmsmekwekjbdl77brufqqbylddugzze4tel6qsnlympgmr46iid';
+const QUOTE_WS_TESTNET =
+  'ws://' + TESTNET_ONION + '.onion:3030/api/quote/xmr-btc';
+const ASB_MULTI_ADR_TESTNET = '/onion3/' + TESTNET_ONION + ':9939';
 const ASB_PEER_ID_TESTNET =
   '12D3KooWCdMKjesXMJz1SiZ7HgotrxuqhQJbP5sgBm2BwP1cqThi';
 
-export function getPeerIdForNetwork(network: Network): PeerId {
-  return network === Network.Mainnet
-    ? PeerId.createFromB58String(ASB_PEER_ID)
-    : PeerId.createFromB58String(ASB_PEER_ID_TESTNET);
+export function getQuoteWebsocketForNetwork(network: Network): string {
+  return network === Network.Mainnet ? QUOTE_WS : QUOTE_WS_TESTNET;
 }
 
-export function getMultiaddrForNetwork(network: Network): Multiaddr {
-  return network === Network.Mainnet
-    ? new Multiaddr(ASB_MULTI_ADR)
-    : new Multiaddr(ASB_MULTI_ADR_TESTNET);
+export function getPeerIdForNetwork(network: Network): string {
+  return network === Network.Mainnet ? ASB_PEER_ID : ASB_PEER_ID_TESTNET;
 }
 
-const transportKey = WebSockets.prototype[Symbol.toStringTag];
+export function getMultiaddrForNetwork(network: Network): string {
+  return network === Network.Mainnet ? ASB_MULTI_ADR : ASB_MULTI_ADR_TESTNET;
+}
+
+export function intoQuote(response: any): Quote | Error {
+  if (response.toString().includes('Error')) {
+    return new Error(response.Error);
+  } else {
+    let quoteRes = response.Quote as QuoteResponse;
+    return new Quote(
+      quoteRes.price,
+      quoteRes.min_quantity,
+      quoteRes.max_quantity
+    );
+  }
+}
 
 export class Quote {
   price: BitcoinAmount;
+  min_quantity: BitcoinAmount;
   max_quantity: BitcoinAmount;
   timestamp: Date;
 
-  constructor(price: number, max_quantity: number) {
+  constructor(price: number, min_quantity: number, max_quantity: number) {
     this.price = BitcoinAmount.fromSat(price);
+    this.min_quantity = BitcoinAmount.fromSat(min_quantity);
     this.max_quantity = BitcoinAmount.fromSat(max_quantity);
     this.timestamp = new Date();
   }
@@ -48,69 +58,6 @@ export class Quote {
 // TODO: Change the ASB to send strings over the wire
 interface QuoteResponse {
   price: number;
+  min_quantity: number;
   max_quantity: number;
-}
-
-const jsonCodec = {
-  encode: msg => {
-    return Buffer.from(JSON.stringify(msg));
-  },
-  decode: bytes => {
-    return JSON.parse(bytes.toString());
-  },
-};
-
-export class Asb {
-  private constructor(private libp2p: Libp2p, private peerId: PeerId) {}
-
-  public static async newInstance(network: Network): Promise<Asb> {
-    let multiaddr = getMultiaddrForNetwork(network);
-    let peerId = getPeerIdForNetwork(network);
-
-    const node = await Libp2p.create({
-      modules: {
-        transport: [WebSockets],
-        connEncryption: [NOISE],
-        streamMuxer: [MPLEX],
-      },
-      config: {
-        transport: {
-          [transportKey]: {
-            // in order to allow IP-addresses as part of the multiaddress we set the filters to all
-            filter: filters.all,
-          },
-        },
-      },
-    });
-
-    await node.start();
-    node.peerStore.addressBook.add(peerId, [multiaddr]);
-
-    return new Asb(node, peerId);
-  }
-
-  public async quote(): Promise<Quote> {
-    try {
-      const { stream } = await this.libp2p.dialProtocol(
-        this.peerId,
-        QUOTE_PROTOCOL
-      );
-      let quote: QuoteResponse = await wrap(stream).pb(jsonCodec).read();
-
-      await stream.close();
-
-      return new Quote(quote.price, quote.max_quantity);
-    } catch (e) {
-      if (e instanceof Error && e.message.includes('No transport available')) {
-        // Since we have set the transport `filters` to `all` so we can use ip-addresses to connect,
-        // we can run into the problem that we try to connect on a port that is not configured for
-        // websockets if connecting on the websocket address fails. In this case we just log a warning.
-        console.warn('skipping port that is not configured for websockets');
-      } else {
-        throw e;
-      }
-    }
-
-    throw Error('All attempts to fetch a quote failed.');
-  }
 }
